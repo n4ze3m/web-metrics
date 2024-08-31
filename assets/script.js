@@ -6,11 +6,7 @@
             this.options = options || {};
             this.endpoint = options.endpoint || '/events';
             this.trackPageviews = options.trackPageviews !== false;
-            this.websiteId = options.websiteId;
-
-            if(!this.websiteId) {
-                throw new Error('Website ID is required');
-            }
+            this.websiteId = options.websiteId || '';
 
             this.userId = this.getUserId();
 
