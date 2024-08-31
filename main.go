@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/n4ze3m/web-metrics/routes"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -48,8 +50,15 @@ func main() {
 	e.Use(dbMiddleware)
 
 	routes.SetupRoutes(e)
-
-	if err := e.Start(":8080"); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost"
+	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if err := e.Start(fmt.Sprintf("%s:%s", host, port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
