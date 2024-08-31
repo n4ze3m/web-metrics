@@ -17,7 +17,7 @@ type Event struct {
 	ScreenWidth  uint16    `db:"screen_width" json:"screen_width"`
 	ScreenHeight uint16    `db:"screen_height" json:"screen_height"`
 	Country      string    `db:"country" json:"country"`
-	Data         string    `db:"data" json:"data"`
+	Data         string    `db:"data" json:"data,omitempty"`
 }
 
 func (e *Event) GenerateIDAndTimestamp() {
@@ -41,6 +41,13 @@ func (e *Event) Validate() error {
 	if len(e.Country) != 2 {
 		return fmt.Errorf("country must be a 2-letter code")
 	}
+
+	// if data is empty add a default value of "{}"
+
+	if e.Data == "" {
+		e.Data = "{}"
+	}
+
 	return nil
 }
 

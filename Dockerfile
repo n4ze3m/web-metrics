@@ -18,6 +18,7 @@ FROM scratch
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/echo-server /echo-server
+COPY --from=builder /app/echo-server/assets /assets
 
 EXPOSE 8080
 

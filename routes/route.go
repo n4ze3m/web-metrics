@@ -7,6 +7,8 @@ import (
 
 func SetupRoutes(e *echo.Echo) {
 
+	e.Static("/js", "assets")
+
 	e.POST("/events", handlers.CreateEventHandler)
 
 	e.GET("/stats", handlers.GetStatsHandler)
