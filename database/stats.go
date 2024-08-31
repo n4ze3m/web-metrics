@@ -72,7 +72,7 @@ func GetWebAnalytics(websiteID string, ctx context.Context, db *sqlx.DB, startDa
 
 	// Query for top pages
 	err = db.SelectContext(ctx, &analytics.TopPages, `
-			SELECT url, COUNT(*) as views 
+			SELECT url, COUNT(DISTINCT user_id) as views 
 			FROM events 
 			WHERE website_id = $1 AND event_type = 'pageview' AND timestamp BETWEEN $2 AND $3 
 			GROUP BY url 
@@ -86,7 +86,7 @@ func GetWebAnalytics(websiteID string, ctx context.Context, db *sqlx.DB, startDa
 
 	// Query for top countries
 	err = db.SelectContext(ctx, &analytics.TopCountries, `
-			SELECT country, COUNT(*) as visits 
+			SELECT country, COUNT(DISTINCT user_id) as visits 
 			FROM events 
 			WHERE website_id = $1 AND event_type = 'pageview' AND timestamp BETWEEN $2 AND $3 
 			GROUP BY country 
