@@ -29,24 +29,33 @@ func InitPostgresDB(ctx context.Context) (*sqlx.DB, error) {
 
 func createEventsTable(ctx context.Context, db *sqlx.DB) error {
 	query := `
-	CREATE TABLE IF NOT EXISTS events (
-		id TEXT PRIMARY KEY,
-		user_id TEXT,
-		event_type TEXT,
-		timestamp TIMESTAMP WITH TIME ZONE,
-		url TEXT,
-		referrer TEXT DEFAULT '',
-		user_agent TEXT DEFAULT '',
-		screen_width SMALLINT,
-		screen_height SMALLINT,
-		country CHAR(2),
-		data JSONB
-	);
-	CREATE INDEX IF NOT EXISTS idx_events_country_user_id_timestamp ON events (country, user_id, timestamp);`
-
+    CREATE TABLE IF NOT EXISTS website (
+       id SERIAL PRIMARY KEY,
+       name TEXT,
+       website_url TEXT,
+       website_id TEXT UNIQUE,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS events (
+       id TEXT PRIMARY KEY,
+       user_id TEXT,
+       event_type TEXT,
+       timestamp TIMESTAMP WITH TIME ZONE,
+       url TEXT,
+       referrer TEXT DEFAULT '',
+       user_agent TEXT DEFAULT '',
+       screen_width SMALLINT,
+       screen_height SMALLINT,
+       country CHAR(2),
+       website_id TEXT,
+       data JSONB,
+       FOREIGN KEY (website_id) REFERENCES website(website_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_events_country_user_id_timestamp ON events (country, user_id, timestamp);
+    `
 	_, err := db.ExecContext(ctx, query)
 	if err != nil {
-		return fmt.Errorf("failed to create events table: %w", err)
+		return fmt.Errorf("failed to create tables: %w", err)
 	}
 
 	return nil

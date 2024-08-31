@@ -6,6 +6,11 @@
             this.options = options || {};
             this.endpoint = options.endpoint || '/events';
             this.trackPageviews = options.trackPageviews !== false;
+            this.webisteId = options.webisteId;
+
+            if(!this.webisteId) {
+                throw new Error('Website ID is required');
+            }
 
             this.userId = this.getUserId();
 
@@ -58,6 +63,7 @@
 
             var data = {
                 user_id: this.userId,
+                website_id: this.webisteId,
                 event_type: eventName,
                 timestamp: new Date().toISOString(),
                 url: window.location.href,

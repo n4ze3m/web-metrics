@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func GetWebAnalytics(ctx context.Context, db *sqlx.DB, startDate, endDate time.Time) (*models.WebAnalytics, error) {
+func GetWebAnalytics(websiteID string, ctx context.Context, db *sqlx.DB, startDate, endDate time.Time) (*models.WebAnalytics, error) {
 	analytics := &models.WebAnalytics{}
 
 	// If no dates are provided, default to the last 7 days
@@ -19,10 +19,10 @@ func GetWebAnalytics(ctx context.Context, db *sqlx.DB, startDate, endDate time.T
 
 	// Query for total visitors
 	err := db.GetContext(ctx, &analytics.TotalVisitors, `
-		SELECT COALESCE(COUNT(DISTINCT user_id), 0) 
-		FROM events 
-		WHERE timestamp BETWEEN $1 AND $2`,
-		startDate, endDate,
+			SELECT COALESCE(COUNT(DISTINCT user_id), 0) 
+			FROM events 
+			WHERE website_id = $1 AND timestamp BETWEEN $2 AND $3`,
+		websiteID, startDate, endDate,
 	)
 	if err != nil {
 		return nil, err
@@ -30,10 +30,10 @@ func GetWebAnalytics(ctx context.Context, db *sqlx.DB, startDate, endDate time.T
 
 	// Query for unique visitors
 	err = db.GetContext(ctx, &analytics.UniqueVisitors, `
-		SELECT COALESCE(COUNT(DISTINCT user_id), 0) 
-		FROM events 
-		WHERE event_type = 'pageview' AND timestamp BETWEEN $1 AND $2`,
-		startDate, endDate,
+			SELECT COALESCE(COUNT(DISTINCT user_id), 0) 
+			FROM events 
+			WHERE website_id = $1 AND event_type = 'pageview' AND timestamp BETWEEN $2 AND $3`,
+		websiteID, startDate, endDate,
 	)
 	if err != nil {
 		return nil, err
@@ -41,10 +41,10 @@ func GetWebAnalytics(ctx context.Context, db *sqlx.DB, startDate, endDate time.T
 
 	// Query for page views
 	err = db.GetContext(ctx, &analytics.PageViews, `
-		SELECT COALESCE(COUNT(*), 0) 
-		FROM events 
-		WHERE event_type = 'pageview' AND timestamp BETWEEN $1 AND $2`,
-		startDate, endDate,
+			SELECT COALESCE(COUNT(*), 0) 
+			FROM events 
+			WHERE website_id = $1 AND event_type = 'pageview' AND timestamp BETWEEN $2 AND $3`,
+		websiteID, startDate, endDate,
 	)
 	if err != nil {
 		return nil, err
@@ -53,13 +53,13 @@ func GetWebAnalytics(ctx context.Context, db *sqlx.DB, startDate, endDate time.T
 	// Calculate bounce rate (simplified)
 	var bounceCount int
 	err = db.GetContext(ctx, &bounceCount, `
-		SELECT COALESCE(COUNT(DISTINCT user_id), 0) 
-		FROM events 
-		WHERE event_type = 'pageview' 
-		AND timestamp BETWEEN $1 AND $2 
-		GROUP BY user_id 
-		HAVING COUNT(*) = 1`,
-		startDate, endDate,
+			SELECT COALESCE(COUNT(DISTINCT user_id), 0) 
+			FROM events 
+			WHERE website_id = $1 AND event_type = 'pageview' 
+			AND timestamp BETWEEN $2 AND $3 
+			GROUP BY user_id 
+			HAVING COUNT(*) = 1`,
+		websiteID, startDate, endDate,
 	)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
@@ -72,13 +72,13 @@ func GetWebAnalytics(ctx context.Context, db *sqlx.DB, startDate, endDate time.T
 
 	// Query for top pages
 	err = db.SelectContext(ctx, &analytics.TopPages, `
-		SELECT url, COUNT(*) as views 
-		FROM events 
-		WHERE event_type = 'pageview' AND timestamp BETWEEN $1 AND $2 
-		GROUP BY url 
-		ORDER BY views DESC 
-		LIMIT 10`,
-		startDate, endDate,
+			SELECT url, COUNT(*) as views 
+			FROM events 
+			WHERE website_id = $1 AND event_type = 'pageview' AND timestamp BETWEEN $2 AND $3 
+			GROUP BY url 
+			ORDER BY views DESC 
+			LIMIT 10`,
+		websiteID, startDate, endDate,
 	)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
@@ -86,13 +86,13 @@ func GetWebAnalytics(ctx context.Context, db *sqlx.DB, startDate, endDate time.T
 
 	// Query for top countries
 	err = db.SelectContext(ctx, &analytics.TopCountries, `
-		SELECT country, COUNT(*) as visits 
-		FROM events 
-		WHERE event_type = 'pageview' AND timestamp BETWEEN $1 AND $2 
-		GROUP BY country 
-		ORDER BY visits DESC 
-		LIMIT 10`,
-		startDate, endDate,
+			SELECT country, COUNT(*) as visits 
+			FROM events 
+			WHERE website_id = $1 AND event_type = 'pageview' AND timestamp BETWEEN $2 AND $3 
+			GROUP BY country 
+			ORDER BY visits DESC 
+			LIMIT 10`,
+		websiteID, startDate, endDate,
 	)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err

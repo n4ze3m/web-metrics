@@ -11,10 +11,10 @@ func SaveEvent(ctx context.Context, db *sqlx.DB, event *models.Event) error {
 	query := `
     INSERT INTO events (
         id, user_id, event_type, timestamp, url, referrer, user_agent,
-        screen_width, screen_height, country, data
+        screen_width, screen_height, country, data, website_id
     ) VALUES (
         :id, :user_id, :event_type, :timestamp, :url, :referrer, :user_agent,
-        :screen_width, :screen_height, :country, :data
+        :screen_width, :screen_height, :country, :data, :website_id
     )`
 
 	_, err := db.NamedExecContext(ctx, query, event)

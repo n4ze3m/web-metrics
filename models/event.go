@@ -18,6 +18,7 @@ type Event struct {
 	ScreenHeight uint16    `db:"screen_height" json:"screen_height"`
 	Country      string    `db:"country" json:"country"`
 	Data         string    `db:"data" json:"data,omitempty"`
+	WebsiteID    string    `db:"website_id" json:"website_id"`
 }
 
 func (e *Event) GenerateIDAndTimestamp() {
@@ -40,6 +41,10 @@ func (e *Event) Validate() error {
 	}
 	if len(e.Country) != 2 {
 		return fmt.Errorf("country must be a 2-letter code")
+	}
+
+	if e.WebsiteID == "" {
+		return fmt.Errorf("website_id is required")
 	}
 
 	// if data is empty add a default value of "{}"

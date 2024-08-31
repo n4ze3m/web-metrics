@@ -16,9 +16,14 @@ func GetStatsHandler(c echo.Context) error {
 
 	startDateStr := c.QueryParam("start_date")
 	endDateStr := c.QueryParam("end_date")
+	websiteID := c.QueryParam("website_id")
 
 	var startDate, endDate time.Time
 	var err error
+
+	if websiteID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Missing website_id"})
+	}
 
 	if startDateStr != "" {
 		startDate, err = time.Parse("2006-01-02", startDateStr)
@@ -35,7 +40,7 @@ func GetStatsHandler(c echo.Context) error {
 	}
 
 	// Get web analytics data
-	analytics, err := database.GetWebAnalytics(c.Request().Context(), db, startDate, endDate)
+	analytics, err := database.GetWebAnalytics(websiteID, c.Request().Context(), db, startDate, endDate)
 	if err != nil {
 		log.Println(err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch analytics data"})
