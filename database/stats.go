@@ -41,7 +41,7 @@ func GetWebAnalytics(websiteID string, ctx context.Context, db *sqlx.DB, startDa
 
 	// Query for page views
 	err = db.GetContext(ctx, &analytics.PageViews, `
-			SELECT COALESCE(COUNT(*), 0) 
+			SELECT COALESCE(COUNT(DISTINCT CONCAT(user_id, url)), 0) 
 			FROM events 
 			WHERE website_id = $1 AND event_type = 'pageview' AND timestamp BETWEEN $2 AND $3`,
 		websiteID, startDate, endDate,
